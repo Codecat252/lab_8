@@ -1,219 +1,94 @@
-﻿#define _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <stdlib.h>
 #include <locale.h>
 #include <string.h>
 #include <time.h>
+#include <queue>
+#include <vector>
 
-#define Max_Size_Q 100
+void find_och(int x, std::vector<std::vector<int>>& k, int m, std::vector<int>& D) {
+    std::queue<int> q;
+    q.push(x);
+    D[x - 1] = 1;
 
-// Функции добавления элемента, удаления
-void spstore(int x);
+    while (!q.empty()) {
+        int current = q.front();
+        q.pop();
+        printf("%d\n", current);
 
-char find_el[256];
-struct node* get_struct(int x); // функция создания элемента
-
-struct node* head = NULL, * last = NULL, * f = NULL; // указатели на первый и последний элементы списка
-
-struct node
-{
-	int vertex; // номер вершины
-	struct node* next; // ссылка на следующий элемент 
-};
-
-
-struct node* get_struct(int x)
-{
-	struct node* p = NULL;
-
-	if ((p = (node*)malloc(sizeof(struct node))) == NULL)  // выделяем память под новый элемент списка
-	{
-		printf("Ошибка при распределении памяти\n");
-		exit(1);
-	}
-
-	p->vertex = x;
-
-	p->next = NULL;
-
-	return p;		// возвращаем указатель на созданный элемент
+        for (int i = 0; i < m; i++) {
+            if (k[current - 1][i] == 1 && D[i] == 0) {
+                q.push(i + 1);
+                D[i] = 1;
+            }
+        }
+    }
 }
 
-/* Последовательное добавление в список элемента (в конец)*/
-void spstore(int x)
-{
-	struct node* p = NULL;
-	p = get_struct(x);
-	if (head == NULL && p != NULL)	// если списка нет, то устанавливаем голову списка
-	{
-		head = p;
-		last = p;
-	}
-	else if (head != NULL && p != NULL) // список уже есть, то вставляем в конец
-	{
-		last->next = p;
-		last = p;
-	}
-	return;
-}
+int main() {
+    setlocale(LC_ALL, "rus");
 
+    clock_t start, end; // объявляем переменные для определения времени выполнения
+    int m;
+    int l;
+    int x; // Вершина
 
-void find_och(int x, int** k, int m, int* D)
-{
-	spstore(x);
-	D[x - 1] = 1;
+    srand(time(NULL));
 
-	while (x != 0)
-	{
-		struct node* struc = head;
-		if (head == NULL)
-		{
-			printf("Список пуст\n");
-		}
-		printf("%d\n", struc->vertex);
-		for (int i = 0; i < m; i++)
-		{
-			if (k[x - 1][i] == 1 && D[i] == 0)
-			{
-				spstore(i + 1);
-				D[i] = 1;
-			}
-		}
+    printf("Введите размер матрицы\n");
+    scanf("%d", &m);
 
-		if (head == NULL) // если голова списка равна NULL, то список пуст
-		{
-			printf("Список пуст\n");
-			return;
-		}
-		head = struc->next; // установливаем голову на следующий элемент
-		free(struc);  // удаляем первый элемент
-		struc = head; // устанавливаем указатель для продолжения поиска
+    std::vector<std::vector<int>> k(m, std::vector<int>(m, 0));
 
-		if (struc != 0)
-			x = struc->vertex;
-		else
-			x = 0;
-	}
-}
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < m; j++) {
+            int t = rand() % 2;
+            k[i][j] = t;
+            k[j][i] = t;
+            k[i][i] = 0;
+        }
+    }
 
-void find_Q(int x, int** k, int m, int* D)
-{
-	int Q[Max_Size_Q] = { 0 };
-	int n = 0;
-	int j = 0;
-	Q[j] = x;
-	D[x - 1] = 1;
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < m; j++) {
+            printf("%d ", k[i][j]);
+        }
+        printf("\n");
+    }
 
-	while (x != 0)
-	{
-		printf("%d\n", Q[j]);
-		for (int i = 0; i < m; i++)
-		{
-			if (k[x - 1][i] == 1 && D[i] == 0)
-			{
-				n++;
-				Q[n] = i + 1;
-				D[i] = 1;
-			}
-		}
-		j++;
-		x = Q[j];
-	}
-}
+    //_____________________________________________
 
-int main()
-{
-	setlocale(LC_ALL, "rus");
+    std::vector<int> D(m, 0); // Массив вершин
 
-	clock_t start, end; // объявляем переменные для определения времени выполнения
-	int m;
-	int l;
-	int x; // Вершина
+    printf("Введите номер вершины - ");
+    scanf("%d", &l);
+    x = l;
 
-	srand(time(NULL));
+    start = clock(); // в переменную start записываем время от начала запуска программы
 
-	printf("Введите размер матрицы\n");
-	scanf("%d", &m);
+    find_och(x, k, m, D);
 
-	int** k = (int**)malloc(m * sizeof(int*));
-	for (int i = 0; i < m; i++)
-	{
-		k[i] = (int*)malloc(m * sizeof(int));
-	}
+    end = clock(); // в переменную end записываем время от начала запуска программы
+    double time = (end - start) * 1000.0 / CLOCKS_PER_SEC; // вычисляем разность(т.е. время, затраченное на умножение матриц)
 
-	for (int i = 0; i < m; i++)
-	{
-		for (int j = 0; j < m; j++)
-		{
-			k[i][j] = 0;
-		}
-	}
+    printf("%lf ms\n", time); // выводим результат работы программы в секундах
 
-	for (int i = 0; i < m; i++)
-	{
-		for (int j = 0; j < m; j++)
-		{
-			int t = rand() % 2;
-			k[i][j] = t;
-			k[j][i] = t;
-			k[i][i] = 0;
-		}
+    //_____________________________________________
 
-	}
+    D.assign(m, 0); // Массив вершин
 
-	for (int i = 0; i < m; i++)
-	{
-		for (int j = 0; j < m; j++)
-		{
-			printf("%d ", k[i][j]);
-		}
-		printf("\n");
-	}
+    x = l;
 
-	//_____________________________________________
+    start = clock(); // в переменную start записываем время от начала запуска программы
 
-	int* D = (int*)malloc(m * sizeof(int));
+    find_och(x, k, m, D);
 
-	for (int i = 0; i < m; i++)
-	{
-		D[i] = 0;	//Массив вершин
-	}
+    end = clock(); // в переменную end записываем время от начала запуска программы
+    time = (end - start) * 1000.0 / CLOCKS_PER_SEC; // вычисляем разность(т.е. время, затраченное на умножение матриц)
 
-	printf("Введите номер вершины - ");
-	scanf("%d", &l);
-	x = l;
+    printf("%lf ms\n", time); // выводим результат работы программы в секундах
 
-	start = clock(); // в переменную start записываем время от начала запуска программы
-
-	find_och(x, k, m, D);
-
-	end = clock(); // в переменную end записываем время от начала запуска программы
-	double time = (end - start) * 1000.0 / CLOCKS_PER_SEC; // вычисляем разность(т.е. время, затраченное на умножение матриц)
-
-	printf("%lf ms\n", time); // выводим результат работы программы в секундах
-
-	//_____________________________________________
-
-	for (int i = 0; i < m; i++)
-	{
-		D[i] = 0;	//Массив вершин
-	}
-
-	x = l;
-
-	start = clock(); // в переменную start записываем время от начала запуска программы
-
-	find_och(x, k, m, D);
-
-	end = clock(); // в переменную end записываем время от начала запуска программы
-	time = (end - start) * 1000.0 / CLOCKS_PER_SEC; // вычисляем разность(т.е. время, затраченное на умножение матриц)
-
-	printf("%lf ms\n", time); // выводим результат работы программы в секундах
-
-	free(D);
-	//_____________________________________________
-
-
-	getchar(); getchar();
-	return 0;
+    getchar(); getchar();
+    return 0;
 }
